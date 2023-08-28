@@ -1,4 +1,4 @@
-# MiniSQL
+# miniSQL
 
 miniSQL is a compact SQL-based database written in C++. It operates through the terminal.
 
@@ -8,7 +8,7 @@ miniSQL is a compact SQL-based database written in C++. It operates through the 
 
 Three basic data types:
 
-- int
+-  int
 
 - float
 
@@ -37,26 +37,28 @@ execfile file_name;
 
 System: windows10
 
-IDE: visual studio 2017 (and above)
+IDE: visual studio 2017
 
-### 表的创建和删除
+### Table Creation and Deletion
 
-一个表最多可以定义32个属性，各属性可以指定为是否unique;支持单属性的主键定义。
+A table can define up to 32 attributes, and each attribute can be specified as unique or not.
 
-创建表的语法如下:
+Iit supports the primary key definition of a single attribute.
+
+To create a table:
 
 ```mysql
-create table 表名 (
-  列名 类型 ,
-  列名 类型 ,
+create table table_name (
+  column_name type ,
+  column_name type ,
   ...
-  列名 类型 ,
-  primary key ( 列名 )
+  column_name type ,
+  primary key ( column_name )
 );
 ```
 
 
-例:
+For example:
 
 ```mysql
 create table student (
@@ -69,67 +71,87 @@ create table student (
 ```
 
 
-删除表的功能是将从数据库中删除表，类似于MySQL中的drop table。语法如下:
+To delete a table:
 
 ```mysql
-drop table 表名;
+drop table table_name;
+```
+
+For example:
+
+```mysql
 drop table student;
 ```
 
-### 索引的建立和删除
 
-对于表的主属性自动建立B+树索引，对于声明为unique的属性可以通过SQL语句由用户指定建立/删除B+树索引，因此，所有的B+树索引都是单属性单值的。
 
-创建索引的语法如下：
+### Index Creation and Deletion
+
+The B+ tree index is automatically established for the main attribute of the table, and the B+ tree index can be specified by the user through the SQL statement for the attribute declared as unique. Therefore, all B+ tree indexes are single-attribute and single-valued.
+
+To create an index：
 
 ```mysql
-create index 索引名 on 表名 ( 列名 );
-create index stunameidx on student ( sname );  # 例
+create index index_name on table_name ( column_name );
+create index stunameidx on student ( sname );  
 ```
 
-删除索引的语法如下：
+To delete an index：
 
 ```mysql
-drop index 索引名;
-drop index stunameidx;             # 例
+drop index index_name;
+drop index stunameidx;            
 ```
 
-  对于建立索引的项目可以通过B+树进行查找，提高效率。
+### Search
 
-### 查找记录
-
-可以通过指定用and连接的多个条件进行查询，对于三种类型支持等值查询；对于int和float类型支持区间查询，考虑实际中的使用情况，对于char(n)类型，不支持区间查询。语法如下：
+You can query by specifying multiple conditions connected with and, and support equivalent query for three types; support interval query for int and float types, considering the actual usage, for char(n) type, range query is not supported. The syntax is as follows:
 
 ```mysql
-select * from 表名;  #无条件查询，获得表中所有记录
-select * from 表名 where 条件; #条件查询
-其中“条件”具有以下格式：列 op 值 and 列 op 值 … and 列 op 值。
-
-op是算术比较符：= <>   <   >   <=  >=
-select * from student; #例
+select * from table_name;  
+select * from table_name where condition;
+# condition：column_name op value and column_name op value … and column_name op value
+# op in {<>, <, >, <=, >=}
+select * from student;
 select * from student where sno = ‘88888888’;
 select * from student where sage > 20 and sgender = ‘F’ and ……;
 ```
 
-### 插入记录
-
-一次插入一条记录，语法如下：
+For example:
 
 ```mysql
-insert into 表名 values ( 值1 , 值2 , … , 值n );
-insert into student values (‘12345678’,’wy’,22,’M’);    #例
+select * from student;
+select * from student where sno = ‘88888888’;
+select * from student where sage > 20 and sgender = ‘F’ and ……;
 ```
 
-### 删除记录
-
-类似**查找记录**，允许无条件和带条件地删除多条记录，语法如下：
+### Insert
 
 ```mysql
-delete from 表名;
-delete from 表名 where 条件;
-delete from student;    # 例
+insert into table_name values ( value_1 , value_2 , … , value_n );
+```
+
+For example:
+
+```mysql
+insert into student values (‘12345678’,’wy’,22,’M’); 
+```
+
+### Delete
+
+```mysql
+delete from table_name;
+delete from table_name where condition;
+```
+
+For example:
+
+```mysql
+delete from student;
 delete from student where sno = ‘88888888’ and age > 20 and ……;
 ```
+
+
 
 ## 2   设计
 
