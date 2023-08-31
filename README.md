@@ -219,76 +219,76 @@ Catalog Manager must also provide an interface for accessing and manipulating th
 
 #### Introduction
 
-Record Manager负责管理记录表中数据的数据文件。主要功能为实现数据文件的创建与删除、记录的插入、删除与查找操作，并对外提供相应的接口。其中记录的查找操作要求能够支持不带条件的查找和带一个条件的查找（包括等值查找、不等值查找和区间查找）。
+Record Manager is responsible for managing the data files of the data in the record table. The main function is to realize the creation and deletion of data files, the insertion, deletion and search operations of records, and provide corresponding interfaces to the outside world. The search operation recorded in it requires the ability to support searches without conditions and searches with one condition (including equal value search, unequal value search and interval search).
 
 ### Index Manager
 
 #### Introduction
 
-IndexManager模块的主要作用是在表格的unique属性上建立索引，以提高数据检索的效率，索引文件采用B+树的数据结构。IndexManager模块定义了三个类，分别为：Node类、BPT类和Index_Manager类。其中Node类定义了B+树中的每个节点，并且提供了相应的函数供BPT类进行调用。BPT类负责管理整棵B+树，通过调用Node中的成员函数实现数据的插入、删除和搜索等功能。Index_Manager类管理一张表格上的所有索引文件，通过三个map容器存储三个不同类型的B+树索引。Index_Manager对外界提供创建索引文件、删除索引文件、以及数据的插入、删除、查询等接口。
+The main function of Index Manager is to create an index on the unique attribute of the table to improve the efficiency of data retrieval. The index file adopts B+ tree data structure. Index Manager defines three classes: Node class, BPT class and Index_Manager class. The Node class defines each node in the B+ tree, and provides corresponding functions for the BPT class to call. The BPT class is responsible for managing the entire B+ tree, and implements functions such as data insertion, deletion, and search by calling member functions in Node. The Index_Manager class manages all index files on a table, and stores three different types of B+ tree indexes through three map containers. Index_Manager provides interfaces for creating index files, deleting index files, and inserting, deleting, and querying data to the outside world.
 
-#### B+树类BPT
+#### BPT class
 
-BPT类管理整棵B+树索引，通过一个指向B+树根节点的指针保存整棵B+树，BPT类对Index_Manager类提供了四个接口，分别为Insert_Key、Delete_Key、Delete_All和Search_Key。四者的功能分别为：插入key、删除key、删除所有key、检索key所对应的地址信息。
+The BPT class manages the entire B+ tree index, and saves the entire B+ tree through a pointer pointing to the root node of the B+ tree. The BPT class provides four interfaces for the Index_Manager class, namely Insert_Key, Delete_Key, Delete_All and Search_Key. The functions of the four interfaces are: insert key, delete key, delete all keys, and retrieve the address information corresponding to the key.
 
 #### Inteface
 
 | Interface    | Function                 |
 | ------------ | ------------------------ |
-| Create_Index | 创建索引文件             |
-| Drop_Index   | 删除索引文件             |
-| Drop_All     | 删除表上所有索引文件     |
-| Clear_Index  | 清空表上所有索引文件数据 |
-| Search       | 查询数据                 |
-| Insert       | 插入                     |
-| Delete       | 删除                     |
+| Create_Index | create a index file             |
+| Drop_Index   | delete a index file             |
+| Drop_All     | delete all the index files on the table     |
+| Clear_Index  | clear all index file data on the table |
+| Search       | query data                 |
+| Insert       | insert data                   |
+| Delete       | delete data                     |
 
-每个Index_Manager对象管理一张表格上的所有索引，创建对象时构造函数接受一个string类型的参数代表表格的名字，随后构造函数会将该表上已经存在的所有索引文件从硬盘读入内存构造B+树索引，析构函数将内存中的B+树删除并将所有索引写入硬盘。
+Each Index_Manager object manages all indexes on a table. When creating an object, the constructor accepts a parameter of type string representing the name of the table, and then the constructor will read all the index files that already exist on the table from the hard disk into memory to construct B+ Tree index, the destructor deletes the B+ tree in memory and writes all indexes to the hard disk.
 
-在交互方面，RecordManager通过Insert和Delete两个接口在表格的数据发生变化的时候更新索引文件中的数据，API通过调用Create_Index、Drop_Index、Drop_All和Clear_Index四个接口分别实现创建索引、删除索引、删除表上所有索引、清空索引文件中所有数据的功能。另外，IndexManager通过CatalogManager提供的接口获得表上的模式信息，并通过BufferManager实现与硬盘之间的数据交换。
+In terms of interaction, RecordManager updates the data in the index file when the data in the table changes through the Insert and Delete interfaces. The API implements creating indexes, deleting indexes, and deleting tables by calling the Create_Index, Drop_Index, Drop_All, and Clear_Index interfaces. The function of uploading all indexes and clearing all data in the index file. In addition, IndexManager obtains the mode information on the table through the interface provided by CatalogManager, and realizes data exchange with the hard disk through BufferManager.
 
-### BufferManager
+### Buffer Manager
 
 #### Introduction
 
-Buffer Manager负责缓冲区的管理，主要功能有：
+Buffer Manager is responsible for buffer management, the main functions are:
 
-1、根据需要，读取指定的数据到系统缓冲区或将缓冲区中的数据写出到文件（**Page on Demand**，请求式分页）
+- Read the specified data to the buffer or write the data from the buffer to the file (**Page on Demand**, request paging)
 
-2、实现**LRU**算法，当缓冲区满时选择合适的页进行替换
+- Implement the **LRU** algorithm, select the appropriate page to replace when the buffer is full
 
-3、记录缓冲区中各页的状态，如是否被修改过等（**dirty bit**）
+- Record the status of each page in the buffer, such as whether it has been modified, etc.（**dirty bit**）
 
-4、提供缓冲区页的**pin**功能，及锁定缓冲区的页，不允许替换出去
+- Provide the **pin** function of the buffer page, and lock the page of the buffer, and it is not allowed to replace it
 
-为提高磁盘I/O操作的效率，缓冲区与文件系统交互的单位是块，块的大小设置为4KB。
+In order to improve the efficiency of disk I/O operations, the unit of interaction between the buffer and the file system is a block, and the block size is set to 4KB.
 
 #### Implementation
 
-Buffer Manager模块首先定义了文件和块的元数据结构，即sqlFile和sqlBlcok结构。在sqlBlock结构中保存dirty bit和pin的相关信息，同时保存一个指向对应文件元结构的指针。同一个文件的不同sqlBlock采用链表方式连接。sqlFile保存文件名、在缓存中块数量等信息，同时保存指针指向该文件对应缓存中的块首，同一个buffer manager的不同sqlFile也采用链表方式连接。
+Buffer Manager first defines the metadata structure of files and blocks, namely the sqlFile and sqlBlcok structures. Save the dirty bit and pin related information in the sqlBlock structure, and save a pointer to the corresponding file meta structure at the same time. Different sqlBlocks of the same file are connected by linked list. sqlFile saves information such as the file name and the number of blocks in the cache, and at the same time saves a pointer pointing to the block header in the corresponding cache of the file. Different sqlFiles of the same buffer manager are also connected by a linked list.
 
-Buffer Manager同时维护一个sqlBlock* Pool[bnum]用来储存所有分配的数据块元信息。采用数组的方式，地址空间连续，在后续LRU等算法实现时，有更高的效率。
+Buffer Manager also maintains a sqlBlock* Pool[bnum] to store all allocated data block metadata. The method of array is adopted, the address space is continuous, and it has higher efficiency when implementing subsequent algorithms such as LRU.
 
-对外接口以block num为单位，实现包括读文件、写文件、删除文件、加锁、解锁、将所有块写回磁盘等函数。
+The external interface takes block num as the unit, and implements functions including reading files, writing files, deleting files, locking, unlocking, and writing all blocks back to disk.
 
 #### Key Algorithms
 
 ##### LRU
 
-不论是ReadFile还是WriteFile都会打开相应文件，然后尝试找到一个块，把文件内容写入缓存中。寻找块会调用私有方法
+Both ReadFile and WriteFile will open the corresponding file, then try to find a block, and write the file content into the cache. Finding a block calls the private method
 
 ```c++
 sqlBlock* getUsableBlock(const string db_name, sqlFile* fileInfo); //LRU here
 ```
 
-该函数会先在已有的缓存中查找，若已有该块数据则返回对应的sqlBlock*,否则检查已分配的块数量是否已经超过了允许的上限，若否，则重新malloc一个块来存放数据；若是，则使用LRU算法替换least recently used的块，将其内容写回磁盘（脏写），然后读入要处理的数据。同时对其它已在缓存区中的数据块执行时间戳更新，以保证一致性。
+This function will first search in the existing cache, if the block data already exists, it will return the corresponding sqlBlock*, otherwise check whether the number of allocated blocks has exceeded the upper limit allowed, if not, malloc a new block to store Data; if so, use the LRU algorithm to replace the least recently used block, write its content back to disk (dirty write), and then read in the data to be processed. At the same time, perform timestamp updates on other data blocks already in the cache to ensure consistency.
 
-此外，如果块已经上锁，则不允许换出，除了在关闭数据库时，会强制释放，否则必须手动解锁后，才能换出。
+In addition, if the block has been locked, it is not allowed to be swapped out, except when the database is closed, it will be forcibly released, otherwise it must be manually unlocked before it can be swapped out.
 
-#### Page On Demand请求式分页
+#### Page On Demand
 
-只有执行LRU算法或者关闭数据库时，才会强制将块的内容写回磁盘中，否则用户的所有操作，包括readFile, writeFile等均只在缓冲区完成，而暂不写回磁盘中（逻辑读写）。这里的请求式分页较为简单，以单个块为单位，不执行其它需要硬件支持的功能。
+Only when the LRU algorithm is executed or the database is closed, will the content of the block be written back to the disk forcibly, otherwise all user operations, including readFile, writeFile, etc., will only be completed in the buffer and will not be written back to the disk (logical read and write ). The on-demand paging here is relatively simple, with a single block as the unit, and does not perform other functions that require hardware support.
 
-#### Dirty Bit脏写
+#### Dirty Bit
 
-对于读入缓冲区中的块，在执行write操作时，会将块的脏位(dirty bit)置为1，与磁盘交换块时，只有脏的块才会写入，否则块直接被新的数据覆盖。这一部分的实现在函数writeBlocktoDisk()中。
+For the blocks read into the buffer, when the write operation is performed, the dirty bit of the block will be set to 1. When exchanging blocks with the disk, only the dirty blocks will be written, otherwise the blocks will be directly replaced by the new data coverage. The implementation of this part is in the function writeBlocktoDisk().
