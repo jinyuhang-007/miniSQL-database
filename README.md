@@ -1,6 +1,6 @@
 # miniSQL
 
-miniSQL is a compact SQL-based database written in C++. It operates through the terminal.
+miniSQL is a compact mini sql based database. It is purely implemented by C++. miniSQL implements basic functions such as creating and deleting tables in the database, querying, and index creation etc.
 
 ## Usage
 
