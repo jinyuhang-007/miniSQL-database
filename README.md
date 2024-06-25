@@ -161,6 +161,7 @@ delete from student where sno = ‘88888888’ and age > 20 and ……;
 - Buffer Manager
 - Catalog Manager
 - Record Manager
+- Index Manager
 
 ![img](https://github.com/Liang-ZX/miniSQL/blob/master/clip_image002.jpg)
 
